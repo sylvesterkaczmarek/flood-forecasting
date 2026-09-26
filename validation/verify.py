@@ -22,7 +22,15 @@ PYTHON = sys.executable
 
 
 def run(label, command, expected=0, cwd=SOURCE):
-    result = subprocess.run(command, cwd=cwd, env=ENV, capture_output=True, text=True, timeout=720)
+    try:
+        result = subprocess.run(command, cwd=cwd, env=ENV, capture_output=True, text=True, timeout=720)
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or b""
+        stderr = exc.stderr or b""
+        output = (stdout.decode(errors="replace") if isinstance(stdout, bytes) else stdout) + (stderr.decode(errors="replace") if isinstance(stderr, bytes) else stderr)
+        (EVIDENCE / (label + ".log")).write_text(output, encoding="utf-8")
+        print(label, "TIMEOUT", output[-18000:], flush=True)
+        raise
     output = result.stdout + result.stderr
     (EVIDENCE / (label + ".log")).write_text(output, encoding="utf-8")
     print(label, "exit", result.returncode, flush=True)
@@ -34,7 +42,7 @@ def run(label, command, expected=0, cwd=SOURCE):
 
 def pytest(label, paths, total, failures=0, coverage=False):
     xml = EVIDENCE / (label + ".xml")
-    cmd = [PYTHON, "-m", "pytest", "-q", "-m", "not gpu", *paths, "--junitxml", str(xml)]
+    cmd = [PYTHON, "-m", "pytest", "-vv", "-o", "faulthandler_timeout=180", "-m", "not gpu", *paths, "--junitxml", str(xml)]
     if coverage:
         cmd += ["--cov=googlehydrology", "--cov-branch", "--cov-report=json:" + str(EVIDENCE / "coverage.json")]
     result = run(label, cmd, expected=0 if failures == 0 else 1)
@@ -52,7 +60,8 @@ actual = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=SOURCE, text=
 assert actual == CONFIG["source"], (actual, CONFIG["source"])
 print("TESTED SOURCE", actual, flush=True)
 run("import-location", [PYTHON, "-c", "import googlehydrology; print(googlehydrology.__file__)"])
-pytest("submitted-suite", ["test"], CONFIG["total"], coverage=True)
+pytest("submitted-suite", ["test"], CONFIG["total"])
+pytest("focused-coverage", [CONFIG["test"]], CONFIG["new_total"], coverage=True)
 run("new-test-ruff", [PYTHON, "-m", "ruff", "check", CONFIG["test"]])
 run("new-test-format", [PYTHON, "-m", "ruff", "format", "--check", CONFIG["test"]])
 run("patch-check", ["git", "diff", "--check", CONFIG["base"], "HEAD"])
