@@ -1,0 +1,50 @@
+name: Validate metric registry and config fixes
+on:
+  push:
+    branches: [validation/flood-metrics-config-20260926]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - case: metrics
+            source: 8f99b0904f33fb4125cc32043dd61c7d931785df
+          - case: config
+            source: c4b12fb46c74f9d06794b31448db74c3ecf7a032
+    env:
+      MPLBACKEND: Agg
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      PYTHONHASHSEED: '7'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: sylvesterkaczmarek/flood-forecasting
+          ref: ${{ matrix.source }}
+          path: work
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Install CPU dependencies
+        run: |
+          python -m pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r validation/requirements.txt -e work
+      - name: Verify exact source, original failures, and installed wheel
+        run: python validation/verify.py "${{ matrix.case }}" work evidence
+      - name: Preserve logs and comparisons
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: validation-${{ matrix.case }}
+          path: evidence/

@@ -1,0 +1,30 @@
+{
+  "metrics": {
+    "branch": "fix/complete-metric-registry-20260926",
+    "production": [
+      "googlehydrology/evaluation/metrics.py"
+    ],
+    "test": "test/test_metric_registry.py",
+    "issue": 310,
+    "base": "3cd66462b6ce9c5335bfcbc71574aacfbff9bd61",
+    "new_total": 40,
+    "total": 345,
+    "original_failures": 18,
+    "source": "8f99b0904f33fb4125cc32043dd61c7d931785df",
+    "message": "Unify metric discovery and dispatch without dropping missed peaks"
+  },
+  "config": {
+    "branch": "fix/explicit-dev-mode-false-20260926",
+    "production": [
+      "googlehydrology/utils/config.py"
+    ],
+    "test": "test/test_config_dev_mode.py",
+    "issue": 312,
+    "base": "3cd66462b6ce9c5335bfcbc71574aacfbff9bd61",
+    "new_total": 21,
+    "total": 326,
+    "original_failures": 11,
+    "source": "c4b12fb46c74f9d06794b31448db74c3ecf7a032",
+    "message": "Accept explicitly disabled development mode in strict configurations"
+  }
+}
