@@ -1,0 +1,29 @@
+{
+  "reproducibility": {
+    "branch": "fix/mean-embedding-initialization-order-20260926",
+    "production": [
+      "googlehydrology/modelzoo/mean_embedding_forecast_lstm.py"
+    ],
+    "test": "test/test_mean_embedding_reproducibility.py",
+    "issue": 305,
+    "new_total": 11,
+    "total": 316,
+    "message": "Preserve configured embedding order across hash seeds",
+    "source": "5c79ddb27acb853535867c4ed5ebaa34322a9c04",
+    "base": "3cd66462b6ce9c5335bfcbc71574aacfbff9bd61"
+  },
+  "devices": {
+    "branch": "fix/cuda-device-index-boundary-20260926",
+    "production": [
+      "googlehydrology/training/basetrainer.py",
+      "googlehydrology/evaluation/tester.py"
+    ],
+    "test": "test/test_device_selection.py",
+    "issue": 312,
+    "new_total": 34,
+    "total": 339,
+    "message": "Reject CUDA device indices equal to the visible device count",
+    "source": "e43b6f82e3d2e66832a370d1ad05036bd4f7ace8",
+    "base": "3cd66462b6ce9c5335bfcbc71574aacfbff9bd61"
+  }
+}
